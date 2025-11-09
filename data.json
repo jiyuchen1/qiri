@@ -1,0 +1,354 @@
+{
+  "version": "1.0.0",
+  "exportedAt": "2025-11-09T09:42:06.447Z",
+  "app": {
+    "name": "containment-skills-ui"
+  },
+  "data": {
+    "containmentObjects": [
+      {
+        "id": "co_001",
+        "name": "雷鸣狼",
+        "rating": "B",
+        "acquisition": "捕捉",
+        "skills": [
+          "sk_001",
+          "sk_002",
+          "sk_005",
+          "sk_008",
+          "sk_012"
+        ]
+      },
+      {
+        "id": "co_002",
+        "name": "寒霜巨蜥",
+        "rating": "A",
+        "acquisition": "捕捉",
+        "skills": [
+          "sk_002",
+          "sk_003",
+          "sk_006",
+          "sk_009",
+          "sk_014",
+          "sk_018"
+        ]
+      },
+      {
+        "id": "co_003",
+        "name": "烈焰鸟",
+        "rating": "B",
+        "acquisition": "捕捉",
+        "skills": [
+          "sk_001",
+          "sk_004",
+          "sk_007",
+          "sk_010"
+        ]
+      },
+      {
+        "id": "co_004",
+        "name": "影刃刺客",
+        "rating": "A",
+        "acquisition": "捕捉",
+        "skills": [
+          "sk_005",
+          "sk_008",
+          "sk_011",
+          "sk_013",
+          "sk_015",
+          "sk_017"
+        ]
+      },
+      {
+        "id": "co_005",
+        "name": "治疗精灵",
+        "rating": "B",
+        "acquisition": "捕捉",
+        "skills": [
+          "sk_002",
+          "sk_006",
+          "sk_012",
+          "sk_016",
+          "sk_019"
+        ]
+      },
+      {
+        "id": "co_006",
+        "name": "风暴法师",
+        "rating": "A",
+        "acquisition": "捕捉",
+        "skills": [
+          "sk_001",
+          "sk_004",
+          "sk_007",
+          "sk_009",
+          "sk_014",
+          "sk_020"
+        ]
+      },
+      {
+        "id": "co_007",
+        "name": "大地守护者",
+        "rating": "S",
+        "acquisition": "捕捉",
+        "skills": [
+          "sk_003",
+          "sk_006",
+          "sk_009",
+          "sk_014",
+          "sk_016",
+          "sk_018",
+          "sk_021"
+        ]
+      },
+      {
+        "id": "co_008",
+        "name": "治愈圣者",
+        "rating": "B",
+        "acquisition": "捕捉",
+        "skills": [
+          "sk_002",
+          "sk_006",
+          "sk_012",
+          "sk_016",
+          "sk_019",
+          "sk_022"
+        ]
+      },
+      {
+        "id": "co_009",
+        "name": "烈焰行者",
+        "rating": "B",
+        "acquisition": "捕捉",
+        "skills": [
+          "sk_001",
+          "sk_004",
+          "sk_007",
+          "sk_010",
+          "sk_014"
+        ]
+      },
+      {
+        "id": "co_010",
+        "name": "暗影猎手",
+        "rating": "B",
+        "acquisition": "捕捉",
+        "skills": [
+          "sk_005",
+          "sk_008",
+          "sk_011",
+          "sk_013",
+          "sk_015",
+          "sk_017"
+        ]
+      },
+      {
+        "id": "co_011",
+        "name": "冰霜女巫",
+        "rating": "S",
+        "acquisition": "捕捉",
+        "skills": [
+          "sk_002",
+          "sk_003",
+          "sk_006",
+          "sk_009",
+          "sk_014",
+          "sk_018",
+          "sk_023"
+        ]
+      },
+      {
+        "id": "co_012",
+        "name": "光明骑士",
+        "rating": "A",
+        "acquisition": "捕捉",
+        "skills": [
+          "sk_002",
+          "sk_006",
+          "sk_012",
+          "sk_016",
+          "sk_019",
+          "sk_021",
+          "sk_024"
+        ]
+      }
+    ],
+    "skills": [
+      {
+        "id": "sk_001",
+        "name": "火焰冲击",
+        "quality": "蓝色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_002",
+        "name": "治疗之光",
+        "quality": "蓝色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_003",
+        "name": "寒冰护甲",
+        "quality": "蓝色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_004",
+        "name": "烈焰风暴",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_005",
+        "name": "影袭",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_006",
+        "name": "护盾术",
+        "quality": "蓝色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_007",
+        "name": "熔岩爆裂",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_008",
+        "name": "暗影步",
+        "quality": "蓝色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_009",
+        "name": "冰霜新星",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_010",
+        "name": "烈火弹",
+        "quality": "蓝色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_011",
+        "name": "毒刃",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_012",
+        "name": "群体治疗",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_013",
+        "name": "隐匿",
+        "quality": "蓝色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_014",
+        "name": "大地震颤",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_015",
+        "name": "致命打击",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_016",
+        "name": "重生",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_017",
+        "name": "暗影突袭",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_018",
+        "name": "冰墙",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_019",
+        "name": "净化",
+        "quality": "蓝色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_020",
+        "name": "雷电链",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_021",
+        "name": "钢铁意志",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_022",
+        "name": "神圣祝福",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_023",
+        "name": "暴风雪",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_024",
+        "name": "圣光审判",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      },
+      {
+        "id": "sk_025",
+        "name": "时间扭曲",
+        "quality": "紫色",
+        "cooldown": 0,
+        "effect": ""
+      }
+    ]
+  }
+}
