@@ -980,6 +980,7 @@ function showNodeDetails(node) {
             <p><strong>名称:</strong> ${data.label}</p>
             <p><strong>品质:</strong> ${data.quality || '蓝色'}</p>
             <p><strong>冷却时间:</strong> ${Number.isFinite(data.cooldown) ? data.cooldown : 0} 秒</p>
+            <p><strong>技能效果:</strong> ${data.effect && data.effect.trim() ? data.effect : '无'}</p>
         `;
         
         const containmentWithSkill = currentData.containmentObjects.filter(co => co.skills.includes(data.id));
@@ -1214,7 +1215,7 @@ function showTooltip(event, node) {
     if (data.type === 'containment') {
         tooltipContent += `类型: 收容物<br>评级: ${data.rating || 'B'}<br>获取方式: ${data.acquisition || '捕捉'}<br>技能数: ${Array.isArray(data.skills) ? data.skills.length : 0}`;
     } else if (data.type === 'skill') {
-        tooltipContent += `类型: 技能<br>品质: ${data.quality || '蓝色'}<br>冷却: ${Number.isFinite(data.cooldown) ? data.cooldown : 0} 秒<br>被引用: ${data.degree} 次`;
+        tooltipContent += `类型: 技能<br>品质: ${data.quality || '蓝色'}<br>冷却: ${Number.isFinite(data.cooldown) ? data.cooldown : 0} 秒<br>效果: ${data.effect && data.effect.trim() ? data.effect : '无'}<br>被引用: ${data.degree} 次`;
     }
     tooltip.innerHTML = tooltipContent;
     tooltip.style.display = 'block';
