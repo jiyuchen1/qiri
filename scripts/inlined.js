@@ -731,7 +731,7 @@ function bindEventHandlers() {
                 '  <button id="closeFormLink" class="modal-close-btn" style="position:absolute; right:6px; top:6px;">×</button>',
                 '  <h4 style="margin-bottom:8px;">新增关联</h4>',
                 '  <label>选择收容物</label><select id="overlayLinkContainmentSelect" style="width:100%; margin-bottom:6px;"></select>',
-                '  <label>选择技能</label><select id="overlayLinkSkillSelect" style="width:100%; margin-bottom:6px;"></select>',
+                '  <label>选择技能（可勾选多项）</label><div id="overlayLinkSkillList" style="display:block; width:100%; max-height:260px; overflow-y:auto; padding:6px; border:1px solid #ddd; border-radius:6px; margin-bottom:6px; background: rgba(0,0,0,0.04); box-sizing: border-box;"></div>',
                 '  <button id="submitLinkOverlay" class="normal-btn">建立关联</button>',
                 '</div>'
             ].join('');
@@ -767,15 +767,46 @@ function bindEventHandlers() {
         // 打开前填充选择项
         try {
             var coSel = document.getElementById('overlayLinkContainmentSelect');
-            var skSel = document.getElementById('overlayLinkSkillSelect');
-            if (coSel && skSel) {
+            var skList = document.getElementById('overlayLinkSkillList');
+            if (coSel && skList) {
                 coSel.innerHTML = '<option value="">请选择收容物</option>';
                 (currentData?.containmentObjects || []).forEach(function(co){
                     var opt = document.createElement('option'); opt.value = co.id; opt.textContent = co.name; coSel.appendChild(opt);
                 });
-                skSel.innerHTML = '<option value="">请选择技能</option>';
+                skList.innerHTML = '';
                 (currentData?.skills || []).forEach(function(sk){
-                    var opt2 = document.createElement('option'); opt2.value = sk.id; opt2.textContent = sk.name; skSel.appendChild(opt2);
+                    var row = document.createElement('div');
+                    // 使用两列网格对齐：左侧复选框，右侧名称
+                    row.style.display = 'grid';
+                    row.style.gridTemplateColumns = '20px 1fr';
+                    row.style.alignItems = 'center';
+                    row.style.columnGap = '8px';
+                    row.style.padding = '6px 8px';
+                    row.style.minHeight = '28px';
+                    row.style.cursor = 'pointer';
+                    // 深浅主题均适配的悬浮效果
+                    row.addEventListener('mouseenter', function(){ row.style.backgroundColor = 'rgba(0,0,0,0.06)'; });
+                    row.addEventListener('mouseleave', function(){ row.style.backgroundColor = ''; });
+
+                    var cb = document.createElement('input');
+                    cb.type = 'checkbox';
+                    cb.value = sk.id;
+                    cb.style.margin = '0';
+
+                    var txt = document.createElement('span');
+                    txt.textContent = sk.name;
+                    txt.style.whiteSpace = 'nowrap';
+                    txt.style.overflow = 'hidden';
+                    txt.style.textOverflow = 'ellipsis';
+
+                    // 点击整行可切换勾选（避免必须点中小复选框）
+                    row.addEventListener('click', function(e){
+                        if (e.target !== cb) { cb.checked = !cb.checked; }
+                    });
+
+                    row.appendChild(cb);
+                    row.appendChild(txt);
+                    skList.appendChild(row);
                 });
             }
         } catch(_){}
@@ -831,12 +862,25 @@ function bindEventHandlers() {
     if (submitLinkOverlay) submitLinkOverlay.addEventListener('click', function(){
         try {
             var coSel = document.getElementById('overlayLinkContainmentSelect');
-            var skSel = document.getElementById('overlayLinkSkillSelect');
+            var skList = document.getElementById('overlayLinkSkillList');
             var coId = coSel ? coSel.value : '';
-            var skId = skSel ? skSel.value : '';
-            // 直接调用建立关联逻辑（不依赖隐藏按钮）
-            performLink(coId, skId);
-            hideAllOverlays();
+            var selectedSkillIds = [];
+            if (skList) {
+                selectedSkillIds = Array.from(skList.querySelectorAll('input[type="checkbox"]:checked'))
+                    .map(function(cb){ return cb.value; })
+                    .filter(function(v){ return !!v; });
+            }
+            // 批量建立关联
+            selectedSkillIds.forEach(function(id){
+                performLink(coId, id);
+            });
+            // 提示并保持窗口开启；可选地取消勾选已处理的技能以便继续选择
+            if (skList) {
+                selectedSkillIds.forEach(function(id){
+                    var cb = skList.querySelector('input[type="checkbox"][value="'+id+'"]');
+                    if (cb) cb.checked = false;
+                });
+            }
         } catch(_){}
     });
 
