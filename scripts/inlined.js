@@ -1164,33 +1164,56 @@ function handleNodeClick(node) {
                 return skillId !== node.data('id');
             });
             
-            // 高亮共同技能节点和连线
-            if (otherCommonSkills.length > 0) {
-                // 高亮共同技能节点
-                otherCommonSkills.forEach(function(skillId) {
-                    cy.getElementById(skillId).addClass('common-highlighted');
-                });
-                
-                // 高亮从共同技能到收容物的连线
-                connectedContainments.forEach(function(co) {
-                    otherCommonSkills.forEach(function(skillId) {
-                        // 尝试两种方向的边查找
-                        let edge = cy.edges(`[source = "${skillId}"][target = "${co.data('id')}"]`);
-                        if (edge.length === 0) {
-                            edge = cy.edges(`[source = "${co.data('id')}"][target = "${skillId}"]`);
-                        }
-                        
-                        // 如果找到边，添加高亮
-                        if (edge.length > 0) {
-                            edge.addClass('common-highlighted');
-                        }
-                    });
-                });
-            }
+            // 为每个共同技能创建不同的颜色组
+            highlightSkillGroups(otherCommonSkills, connectedContainments);
         }
     }
     
     // 移除显示节点详情和更新统计信息，只保留高亮功能
+}
+
+// 为每个共同技能创建不同的颜色组
+function highlightSkillGroups(commonSkills, connectedContainments) {
+    // 定义一组颜色
+    const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#e67e22', '#95a5a6', '#d35400'];
+    
+    // 为每个共同技能分配一个颜色
+    commonSkills.forEach(function(skillId, index) {
+        const color = colors[index % colors.length];
+        const skill = cy.getElementById(skillId);
+        
+        // 高亮共同技能节点
+        skill.addClass('common-highlighted');
+        skill.style('border-color', color);
+        
+        // 找出拥有这个技能的收容物
+        const containmentsWithSkill = [];
+        connectedContainments.forEach(function(co) {
+            const coSkills = [];
+            co.neighborhood('[type = "skill"]').forEach(function(sk) {
+                coSkills.push(sk.data('id'));
+            });
+            
+            if (coSkills.includes(skillId)) {
+                containmentsWithSkill.push(co);
+            }
+        });
+        
+        // 高亮从共同技能到收容物的连线
+        containmentsWithSkill.forEach(function(co) {
+            // 尝试两种方向的边查找
+            let edge = cy.edges(`[source = "${skillId}"][target = "${co.data('id')}"]`);
+            if (edge.length === 0) {
+                edge = cy.edges(`[source = "${co.data('id')}"][target = "${skillId}"]`);
+            }
+            
+            // 如果找到边，添加高亮并设置颜色
+            if (edge.length > 0) {
+                edge.addClass('common-highlighted');
+                edge.style('line-color', color);
+            }
+        });
+    });
 }
 
 // 显示节点详情
