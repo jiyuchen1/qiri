@@ -1,5 +1,242 @@
 /* Base reset and layout */
 * { margin: 0; padding: 0; box-sizing: border-box; }
+/* 悬浮按钮容器样式 */
+.floating-buttons-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+/* 悬浮按钮组样式 */
+.floating-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+    transition: all 0.3s ease;
+}
+
+/* 折叠按钮样式 */
+.toggle-btn {
+    background-color: #e74c3c;
+    transform: rotate(0deg);
+    transition: transform 0.3s ease;
+}
+
+.toggle-btn:hover {
+    background-color: #c0392b;
+}
+
+/* 折叠状态样式 */
+.floating-buttons.collapsed {
+    transform: scale(0);
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+}
+
+.toggle-btn.collapsed {
+    transform: rotate(180deg);
+}
+
+/* 暗色主题下的折叠按钮 */
+body.dark-theme .toggle-btn {
+    background-color: #c0392b;
+}
+
+body.dark-theme .toggle-btn:hover {
+    background-color: #e74c3c;
+}
+
+.floating-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.floating-btn:hover {
+    background-color: #2980b9;
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+/* 布局切换菜单样式 */
+.layout-menu {
+    position: absolute;
+    bottom: 60px;
+    right: 0;
+    background: rgba(255,255,255,0.98);
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    padding: 8px;
+    min-width: 140px;
+    z-index: 15;
+}
+
+.layout-menu button {
+    width: 100%;
+    margin-bottom: 6px;
+    text-align: left;
+}
+
+.layout-menu button:last-child {
+    margin-bottom: 0;
+}
+
+/* 搜索菜单样式 */
+.search-menu {
+  position: absolute;
+  bottom: 60px;
+  right: 0;
+  background: rgba(255,255,255,0.98);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  padding: 8px;
+  min-width: 200px;
+  z-index: 1000;
+}
+
+/* 类型切换菜单样式 */
+.type-menu {
+  position: absolute;
+  bottom: 60px;
+  right: 0;
+  background: rgba(255,255,255,0.98);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  padding: 8px;
+  min-width: 140px;
+  z-index: 1000;
+}
+
+.type-menu button {
+  width: 100%;
+  margin-bottom: 6px;
+  text-align: left;
+}
+
+.type-menu button:last-child {
+  margin-bottom: 0;
+}
+
+/* 搜索建议列表 */
+#searchSuggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+  background: white;
+  color: #333;
+}
+
+/* 搜索建议项 */
+#searchSuggestions .suggest-item {
+  padding: 6px 8px;
+  cursor: pointer;
+  color: inherit;
+}
+
+#searchSuggestions .suggest-item:hover {
+  background: #f5f5f5;
+}
+
+/* 暗色主题下的悬浮按钮样式 */
+body.dark-theme .floating-btn {
+  background-color: #2c3e50;
+  color: white;
+}
+
+body.dark-theme .floating-btn:hover {
+  background-color: #34495e;
+}
+
+/* 暗色主题下的布局菜单 */
+body.dark-theme .layout-menu {
+  background: rgba(44, 62, 80, 0.95);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #ecf0f1;
+}
+
+/* 暗色主题下的搜索菜单 */
+body.dark-theme .search-menu {
+  background: rgba(47,47,47,0.95);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  color: #ecf0f1;
+}
+
+body.dark-theme .search-menu input,
+body.dark-theme .search-menu select {
+  background: rgba(52, 73, 94, 0.8);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ecf0f1;
+}
+
+/* 暗色主题下的类型菜单 */
+body.dark-theme .type-menu {
+  background: rgba(44, 62, 80, 0.95);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #ecf0f1;
+}
+
+/* 暗色主题下的搜索建议列表 */
+body.dark-theme #searchSuggestions {
+  background: #2f2f2f !important;
+  color: #e0e0e0 !important;
+  border-color: #666 !important;
+}
+
+body.dark-theme #searchSuggestions .suggest-item:hover {
+  background: #3a3a3a;
+}
+
+/* 暗色主题下的类型菜单 */
+body.dark-theme .type-menu {
+    background: rgba(44, 62, 80, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #ecf0f1;
+}
+
+/* 暗色主题下的数据管理面板 */
+body.dark-theme .dm-panel {
+    background: rgba(44, 62, 80, 0.95);
+    color: #ecf0f1;
+}
+
+body.dark-theme .dm-panel button {
+    background-color: #3498db;
+    color: white;
+}
+
+body.dark-theme .dm-panel button:hover {
+    background-color: #2980b9;
+}
+
+/* 原有样式保持不变 */
 body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5; color: #333; height: 100vh; overflow: hidden; }
 body.dark-theme { background-color: #1a1a1a; color: #e0e0e0; }
 .container { display: flex; height: 100vh; }
@@ -569,78 +806,51 @@ body.dark-theme .stats-list .stat-item { border-bottom-color: rgba(255,255,255,0
 }
 body.dark-theme .legend-shape { border-color: #bbb; background: #555; }
 
-/* ==== Overrides: Topbar dark theme + stacking fix ==== */
-
-/* Ensure topbar readable in both themes (override inline background) */
-/* Also avoid blocking graph hover/clicks in gaps by disabling pointer events on the container,
-   while keeping interactions enabled for its children */
-.topbar {
-  background: rgba(255,255,255,0.9) !important;
-  color: #333 !important;
-  pointer-events: none;
-}
-body.dark-theme .topbar {
-  background: rgba(45,45,45,0.95) !important;
-  color: #e0e0e0 !important;
-  pointer-events: none;
-}
-/* Re-enable interactions for controls inside topbar */
-.topbar * {
-  pointer-events: auto;
-}
-/* Labels follow container color */
-.topbar label { color: inherit !important; }
-/* Inputs/selects readable in dark theme */
-body.dark-theme .topbar input,
-body.dark-theme .topbar select {
-  background: #2f2f2f !important;
-  color: #e0e0e0 !important;
-  border-color: #444 !important;
+/* 右键菜单样式 */
+.context-menu {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 8px 0;
+  min-width: 150px;
+  z-index: 1000;
+  display: none;
 }
 
-/* Sidebar must stay above the topbar */
-.sidebar { z-index: 25 !important; }
-
-
-/* ==== Topbar compaction & interaction fixes (avoid overlay blocking graph events) ==== */
-/* Prevent topbar controls from stretching to 100% width so the bar stays compact */
-.topbar input,
-.topbar select,
-.topbar button {
-  width: auto !important;
-  max-width: none !important;
-  display: inline-block;
+body.dark-theme .context-menu {
+  background: rgba(45, 45, 45, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Keep action buttons single-line and compact (defensive vs global rules) */
-.topbar .top-actions button,
-.topbar .nav-extras button {
-  white-space: nowrap;
-  width: auto !important;
+.context-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: background-color 0.2s;
 }
 
-/* Avoid wrapping in the nav extras cluster */
-.topbar .nav-extras { flex-wrap: nowrap; }
-
-/* Ensure tooltip always appears above nav layers */
-#tooltip { z-index: 1000 !important; }
-
-/* ==== Dark theme overrides: search suggestions and overlay forms ==== */
-
-/* Suggestions list default (light theme) */
-.search-suggestions { color: #333; }
-.search-suggestions .suggest-item { color: inherit; }
-.search-suggestions .suggest-item:hover { background: #f5f5f5; }
-
-/* Suggestions list in dark theme: readable contrast */
-body.dark-theme .search-suggestions {
-  background: #2f2f2f !important;
-  color: #e0e0e0 !important;
-  border-color: #666 !important;
+body.dark-theme .context-menu-item {
+  color: #e0e0e0;
 }
-body.dark-theme .search-suggestions .suggest-item:hover {
-  background: #3a3a3a;
+
+.context-menu-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
+
+body.dark-theme .context-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+
+/* ==== Dark theme overrides: overlay forms ==== */
 
 /* Overlay forms created by inlined.js (class="overlay-card") */
 .overlay-card {

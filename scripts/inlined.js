@@ -14,6 +14,7 @@ let degreeCounts = {};
 let isDarkTheme = false;
 let isBipartiteLayout = true;
 let layoutMode = 'bipartite';
+let currentTypeFilter = 'all';
 
 // 颜色映射
 
@@ -32,14 +33,16 @@ function initializeApp() {
                 selector: 'node',
                 style: {
                     'label': 'data(label)',
-                    'text-valign': 'center',
+                    'text-valign': 'bottom',
                     'text-halign': 'center',
-                    'text-wrap': 'wrap',
-                    'text-max-width': '100px',
-                    'font-size': '9px',
+                    'text-margin-x': 0,
+                    'text-margin-y': 12,
+                    'text-wrap': 'none',
+                    'font-size': '12px',
                     'color': 'white',
                     'text-outline-color': 'black',
-                    'text-outline-width': 1
+                    'text-outline-width': 1,
+                    'min-zoomed-font-size': 6
                 }
             },
             {
@@ -57,11 +60,17 @@ function initializeApp() {
             {
                 selector: 'node[type = "containment"]',
                 style: {
-                    'background-color': '#9E9E9E',
+                    'background-color': '#b0bec5',
                     'shape': 'ellipse',
-                    'width': 'mapData(size, 0, 10, 40, 100)',
-                    'height': 'mapData(size, 0, 10, 40, 100)',
-                    'text-max-width': '140px'
+                    'width': 16,
+                    'height': 16,
+                    'background-opacity': 1,
+                    'opacity': 1,
+                    'border-width': 2,
+                    'border-color': '#90a4ae',
+                    'border-opacity': 1,
+                    'shadow-blur': 0,
+                    'shadow-opacity': 0
                 }
             },
             {
@@ -87,9 +96,15 @@ function initializeApp() {
                 style: {
                     'background-color': 'data(color)',
                     'shape': 'rectangle',
-                    'width': 'mapData(size, 0, 20, 30, 70)',
-                    'height': 'mapData(size, 0, 20, 30, 70)',
-                    'text-max-width': '100px'
+                    'width': 14,
+                    'height': 14,
+                    'background-opacity': 1,
+                    'opacity': 1,
+                    'border-width': 2,
+                    'border-color': '#90a4ae',
+                    'border-opacity': 1,
+                    'shadow-blur': 0,
+                    'shadow-opacity': 0
                 }
             },
             {
@@ -106,9 +121,13 @@ function initializeApp() {
             {
                 selector: 'node.highlighted',
                 style: {
-                    'border-width': 3,
-                    'border-color': '#f1c40f',
-                    'z-index': 9999
+                    'border-width': 4,
+                    'border-color': '#ff6b6b',
+                    'z-index': 9999,
+                    'background-color': '#ffdddd',
+                    'shadow-blur': 10,
+                    'shadow-color': '#ff6b6b',
+                    'shadow-opacity': 0.8
                 }
             },
             {
@@ -117,6 +136,22 @@ function initializeApp() {
                     'width': 3,
                     'line-color': '#f1c40f',
                     'opacity': 0.9
+                }
+            },
+            {
+                selector: 'edge.common-highlighted',
+                style: {
+                    'width': 3,
+                    'line-color': '#e74c3c',
+                    'opacity': 0.9
+                }
+            },
+            {
+                selector: 'node.common-highlighted',
+                style: {
+                    'border-width': 3,
+                    'border-color': '#e74c3c',
+                    'z-index': 9999
                 }
             }
         ],
@@ -140,6 +175,22 @@ function initializeApp() {
 
     // 恢复 UI 状态（主题与布局偏好），并确保标签可见、边标签关闭
     restoreUIState();
+    
+    // 确保默认布局为网格布局并自动适配视图
+    setTimeout(() => {
+        try {
+            isBipartiteLayout = false;
+            layoutMode = 'grid';
+            applyLayout('grid');
+            persistUIState();
+            // 额外确保适配视图
+            setTimeout(() => {
+                if (cy && cy.fit) {
+                    cy.fit();
+                }
+            }, 600);
+        } catch(_) {}
+    }, 500);
 }
 
 // 数据加载和验证函数
@@ -276,7 +327,8 @@ function buildGraphData() {
                         id: `${containment.id}-${skillId}`,
                         source: containment.id,
                         target: skillId,
-                        weight: 1
+                        weight: 1,
+                        color: '#90a4ae'  // 设置默认边颜色为灰色
                     }
                 });
             }
@@ -482,7 +534,7 @@ function bindEventHandlers() {
         if (!co.skills.includes(skId)) co.skills.push(skId);
         const existingEdge = cy.edges().some(e => e.data('source') === coId && e.data('target') === skId);
         if (!existingEdge) {
-            cy.add({ data: { id: `e_${coId}_${skId}`, source: coId, target: skId, weight: 1 } });
+            cy.add({ data: { id: `e_${coId}_${skId}`, source: coId, target: skId, weight: 1, color: '#90a4ae' } });
         }
         updateStats();
         showToast('已建立关联');
@@ -513,6 +565,28 @@ function bindEventHandlers() {
         sidebarEl.classList.remove('active');
         sidebarEl.style.transform = 'translateX(100%)';
         sidebarEl.style.display = 'none';
+    });
+    
+    // 右键菜单查看详情按钮事件
+    const viewDetailsBtn = document.getElementById('viewDetailsBtn');
+    if (viewDetailsBtn) viewDetailsBtn.addEventListener('click', function() {
+        if (currentNode) {
+            // 先隐藏右键菜单
+            hideContextMenu();
+            
+            // 清除之前的高亮，包括所有节点和边
+            cy.elements().removeClass('highlighted common-highlighted');
+            
+            // 高亮当前节点及相邻节点
+            currentNode.addClass('highlighted');
+            currentNode.neighborhood().addClass('highlighted');
+            
+            // 显示节点详情
+            showNodeDetails(currentNode);
+            
+            // 更新统计信息
+            updateStats();
+        }
     });
     
     // 节点详情面板内的操作委托（编辑/删除/解除关联/保存/取消）
@@ -572,9 +646,37 @@ function bindEventHandlers() {
     if (themeBtnEl) themeBtnEl.addEventListener('click', toggleTheme);
 
     // 图表交互事件
+    // 保留原有的节点点击事件
     cy.on('tap', 'node', function(evt) {
         const node = evt.target;
         handleNodeClick(node);
+    });
+
+    // 添加右键菜单事件
+    cy.on('cxttap', 'node', function(evt) {
+        const node = evt.target;
+        const e = evt.originalEvent || evt;
+        showContextMenu(e, node);
+    });
+
+    // 点击空白区域隐藏右键菜单
+    cy.on('tap', function(evt) {
+        if (evt.target === cy) {
+            hideContextMenu();
+            // 点击空白区域时才重置currentNode
+            currentNode = null;
+            // 清除所有高亮
+            cy.elements().removeClass('highlighted common-highlighted');
+        }
+    });
+
+    // 点击空白区域隐藏右键菜单
+    document.addEventListener('click', function(evt) {
+        if (!evt.target.closest('#contextMenu')) {
+            hideContextMenu();
+            // 点击非右键菜单区域时才重置currentNode
+            currentNode = null;
+        }
     });
 
     cy.on('mouseover', 'node', function(evt) {
@@ -603,7 +705,7 @@ function bindEventHandlers() {
 
     cy.on('cxttap', function(evt) {
         // 右键点击清除选择
-        cy.elements().removeClass('highlighted');
+        cy.elements().removeClass('highlighted common-highlighted');
     });
 
     // 数据管理浮动面板：打开/关闭与三项动作（导入/清空/导出）
@@ -884,14 +986,14 @@ function bindEventHandlers() {
         } catch(_){}
     });
 
-    // 点击非面板区域时自动收起（适配移动到导航栏后的结构）
+    // 点击非面板区域时自动收起
     document.addEventListener('click', function (e) {
         try {
             // 数据管理面板点击外收起
             if (dmPanel) {
                 var isPanelOpen = dmPanel.style.display && dmPanel.style.display !== 'none';
                 if (isPanelOpen) {
-                    var mgr = document.querySelector('.nav-extras') || dmPanel.parentElement;
+                    var mgr = dmPanel.parentElement;
                     if (!(mgr && mgr.contains(e.target))) {
                         dmPanel.style.display = 'none';
                     }
@@ -899,7 +1001,7 @@ function bindEventHandlers() {
             }
             // 搜索建议点击外收起
             var sugg = document.getElementById('searchSuggestions');
-            var input = document.getElementById('topSearchInput') || document.getElementById('searchInput');
+            var input = document.getElementById('searchInput');
             if (sugg && sugg.style.display && sugg.style.display !== 'none') {
                 var host = input && input.parentElement ? input.parentElement : null;
                 if (!(sugg.contains(e.target) || (host && host.contains(e.target)))) {
@@ -910,10 +1012,49 @@ function bindEventHandlers() {
     });
 }
 
+// 右键菜单相关函数
+let currentNode = null; // 存储当前右键点击的节点
+
+// 显示右键菜单
+function showContextMenu(event, node) {
+    event.preventDefault(); // 阻止默认右键菜单
+    currentNode = node; // 保存当前节点引用
+    
+    const contextMenu = document.getElementById('contextMenu');
+    if (!contextMenu) return;
+    
+    // 设置菜单位置
+    contextMenu.style.left = `${event.pageX}px`;
+    contextMenu.style.top = `${event.pageY}px`;
+    contextMenu.style.display = 'block';
+    
+    // 确保菜单不超出视窗
+    const rect = contextMenu.getBoundingClientRect();
+    if (rect.right > window.innerWidth) {
+        contextMenu.style.left = `${event.pageX - rect.width}px`;
+    }
+    if (rect.bottom > window.innerHeight) {
+        contextMenu.style.top = `${event.pageY - rect.height}px`;
+    }
+}
+
+// 隐藏右键菜单
+function hideContextMenu() {
+    const contextMenu = document.getElementById('contextMenu');
+    if (contextMenu) {
+        contextMenu.style.display = 'none';
+    }
+    // 不重置currentNode，以便在点击查看详情按钮时仍能获取节点
+}
+
 // 应用布局
 function applyLayout(layoutName = null) {
     let layout;
-    const mode = layoutName || layoutMode || (isBipartiteLayout ? 'bipartite' : 'cose');
+    // 兼容旧存储值：将 legacy 'force' 映射为 'cose'，并进行白名单校验
+    let mode = layoutName || layoutMode || (isBipartiteLayout ? 'bipartite' : 'cose');
+    if (mode === 'force') mode = 'cose';
+    const supported = ['bipartite','cose','circle','grid','cola'];
+    if (!supported.includes(mode)) mode = 'cose';
 
     if (mode === 'bipartite') {
         layout = createBipartiteLayout();
@@ -927,7 +1068,12 @@ function applyLayout(layoutName = null) {
         };
     }
 
-    cy.layout(layout).run();
+    try {
+        cy.layout(layout).run();
+    } catch (e) {
+        // 若运行时该布局不可用（例如未注册），则回退到内置 cose
+        try { cy.layout({ name: 'cose', animate: true, animationDuration: 500, fit: true, padding: 50 }).run(); } catch(_) {}
+    }
     setTimeout(() => cy.fit(), 100); // 确保布局应用后适配视图
 
     // 同步并持久化当前布局模式
@@ -970,18 +1116,81 @@ function createBipartiteLayout() {
 
 // 处理节点点击
 function handleNodeClick(node) {
-    // 清除之前的高亮
-    cy.elements().removeClass('highlighted');
+    // 清除之前的高亮，包括所有节点和边
+    cy.elements().removeClass('highlighted common-highlighted');
     
     // 高亮当前节点及相邻节点
     node.addClass('highlighted');
     node.neighborhood().addClass('highlighted');
     
-    // 显示节点详情
-    showNodeDetails(node);
+    // 如果点击的是技能节点，找出与该技能相连的所有收容物
+    if (node.data('type') === 'skill') {
+        // 获取与该技能相连的所有收容物节点
+        const connectedContainments = node.neighborhood('[type = "containment"]');
+        
+        // 如果有多个收容物，找出这些收容物中至少两个共同拥有的技能
+        if (connectedContainments.length > 1) {
+            // 获取每个收容物的技能列表
+            const containmentSkills = [];
+            connectedContainments.forEach(function(co) {
+                const coSkills = [];
+                // 获取与该收容物相连的所有技能节点
+                co.neighborhood('[type = "skill"]').forEach(function(skill) {
+                    coSkills.push(skill.data('id'));
+                });
+                containmentSkills.push(coSkills);
+            });
+            
+            // 找出至少两个收容物共同拥有的技能
+            const skillCount = {};
+            
+            // 统计每个技能出现在多少个收容物中
+            containmentSkills.forEach(function(coSkills) {
+                coSkills.forEach(function(skillId) {
+                    if (!skillCount[skillId]) {
+                        skillCount[skillId] = 0;
+                    }
+                    skillCount[skillId]++;
+                });
+            });
+            
+            // 筛选出至少出现在两个收容物中的技能
+            const commonSkills = Object.keys(skillCount).filter(function(skillId) {
+                return skillCount[skillId] >= 2;
+            });
+            
+            // 排除当前点击的技能节点
+            const otherCommonSkills = commonSkills.filter(function(skillId) {
+                return skillId !== node.data('id');
+            });
+            
+            // 高亮共同技能节点和连线
+            if (otherCommonSkills.length > 0) {
+                // 高亮共同技能节点
+                otherCommonSkills.forEach(function(skillId) {
+                    cy.getElementById(skillId).addClass('common-highlighted');
+                });
+                
+                // 高亮从共同技能到收容物的连线
+                connectedContainments.forEach(function(co) {
+                    otherCommonSkills.forEach(function(skillId) {
+                        // 尝试两种方向的边查找
+                        let edge = cy.edges(`[source = "${skillId}"][target = "${co.data('id')}"]`);
+                        if (edge.length === 0) {
+                            edge = cy.edges(`[source = "${co.data('id')}"][target = "${skillId}"]`);
+                        }
+                        
+                        // 如果找到边，添加高亮
+                        if (edge.length > 0) {
+                            edge.addClass('common-highlighted');
+                        }
+                    });
+                });
+            }
+        }
+    }
     
-    // 更新统计信息
-    updateStats();
+    // 移除显示节点详情和更新统计信息，只保留高亮功能
 }
 
 // 显示节点详情
@@ -1279,18 +1488,63 @@ function locateNodeById(id){
     try {
         const node = cy.getElementById(id);
         if (!node || node.empty()) { showToast('未找到节点'); return; }
-        cy.elements().removeClass('highlighted');
+        // 清除之前的高亮，包括所有节点和边
+        cy.elements().removeClass('highlighted common-highlighted');
+        // 添加高亮效果
         node.addClass('highlighted');
-        try { cy.fit(node, 80); cy.center(node); } catch(e){}
+        
+        // 创建水波纹效果
+        createRippleEffect(node);
+        
         showNodeDetails(node);
         hideTooltip();
         const box = document.getElementById('searchSuggestions');
         if (box){ box.style.display = 'none'; box.innerHTML = ''; }
     } catch(e){}
 }
+
+// 创建水波纹效果
+function createRippleEffect(node) {
+    const nodePos = node.position();
+    const nodeSize = node.width();
+    
+    // 创建多个水波纹圆圈，形成扩散效果
+    for (let i = 0; i < 3; i++) {
+        setTimeout(() => {
+            const rippleId = 'ripple-' + Date.now() + '-' + i;
+            const ripple = cy.add({
+                group: 'nodes',
+                data: { id: rippleId },
+                position: { x: nodePos.x, y: nodePos.y },
+                style: {
+                    'width': nodeSize,
+                    'height': nodeSize,
+                    'shape': 'circle',
+                    'background-color': 'transparent',
+                    'border-width': 2,
+                    'border-color': '#ff6b6b',
+                    'opacity': 0.8
+                }
+            });
+            
+            // 动画扩散效果
+            ripple.animate({
+                style: {
+                    'width': nodeSize * 4,
+                    'height': nodeSize * 4,
+                    'opacity': 0
+                },
+                duration: 8000,
+                complete: function() {
+                    cy.remove(ripple);
+                }
+            });
+        }, i * 300); // 每个波纹间隔300ms
+    }
+}
 function updateSearchSuggestions(){
     const box = document.getElementById('searchSuggestions');
-    const inputEl = document.getElementById('topSearchInput') || document.getElementById('searchInput');
+    const inputEl = document.getElementById('floatingSearchInput') || document.getElementById('searchInput');
     if (!box || !inputEl) return;
     const q = (inputEl.value || '').trim().toLowerCase();
     if (!q){
@@ -1310,7 +1564,8 @@ function updateSearchSuggestions(){
         let html = '';
         function section(title, arr){
             if (!arr.length) return;
-            html += '<div style="padding:6px 8px; font-weight:600; color:#666;">' + title + '</div>';
+            const titleColor = isDarkTheme ? '#b0b0b0' : '#666';
+            html += '<div style="padding:6px 8px; font-weight:600; color:' + titleColor + ';">' + title + '</div>';
             arr.slice(0, 20).forEach(n => {
                 const id = n.data('id');
                 const label = n.data('label');
@@ -1345,14 +1600,16 @@ function handleSearch(){
 
 // 处理筛选（仅按类型）
 function handleFilter() {
-    const typeEl = document.getElementById('typeFilter') || document.getElementById('topTypeFilter');
-    const typeFilter = typeEl ? typeEl.value : '';
+    // 先显示所有元素
     cy.elements().show();
+    
+    // 检查是否有类型筛选
+    if (currentTypeFilter === 'all') return;
+    
+    // 根据当前类型筛选隐藏不匹配的节点
     cy.nodes().forEach(function(node){
         const data = node.data();
-        let showNode = true;
-        if (typeFilter && data.type !== typeFilter) { showNode = false; }
-        if (!showNode) {
+        if (data.type !== currentTypeFilter) {
             node.hide();
             node.connectedEdges().hide();
         }
@@ -1396,12 +1653,21 @@ function updateStats() {
 function toggleTheme() {
     isDarkTheme = !isDarkTheme;
     document.body.classList.toggle('dark-theme', isDarkTheme);
-    const themeBtn = document.getElementById('themeToggleBtn');
-    themeBtn.textContent = isDarkTheme ? '切换亮色主题' : '切换暗色主题';
+    // 主题切换不再需要更改按钮文本，因为现在使用图标按钮
+
+    // 主题感知：核心背景 + 节点边框/填充（确保浅色主题下也能看到小点）
+    const borderColor = isDarkTheme ? '#cfd8dc' : '#90a4ae';
+    const containmentFill = isDarkTheme ? '#d8dee9' : '#b0bec5';
+
     cy.style()
-        .selector('core')
-        .style({ 'background-color': isDarkTheme ? '#1a1a1a' : '#ffffff' })
-        .update();
+      .selector('core')
+      .style({ 'background-color': isDarkTheme ? '#1a1a1a' : '#ffffff' })
+      .selector('node[type = "containment"]')
+      .style({ 'border-color': borderColor, 'background-color': containmentFill })
+      .selector('node[type = "skill"]')
+      .style({ 'border-color': borderColor }) // skill 仍使用 data(color) 作为填充色
+      .update();
+
     persistUIState();
 }
 
@@ -1422,14 +1688,17 @@ function restoreUIState() {
         if (!raw) return;
         const s = JSON.parse(raw);
 
-        // 主题恢复与按钮文案同步
+        // 主题恢复
         isDarkTheme = !!s.dark;
         document.body.classList.toggle('dark-theme', isDarkTheme);
-        const themeBtn = document.getElementById('themeToggleBtn');
-        if (themeBtn) themeBtn.textContent = isDarkTheme ? '切换亮色主题' : '切换暗色主题';
+        // 主题恢复不再需要更改按钮文本，因为现在使用图标按钮
 
-        // 布局模式恢复（优先 layoutMode，其次 bipartite 布尔）
-        layoutMode = s.layoutMode || (s.bipartite ? 'bipartite' : 'cose');
+        // 布局模式恢复（优先 layoutMode，其次 bipartite 布尔），并做兼容与回退
+        let lm = s.layoutMode || (s.bipartite ? 'bipartite' : 'cose');
+        if (lm === 'force') lm = 'cose';
+        const supported = ['bipartite','cose','circle','grid','cola'];
+        if (!supported.includes(lm)) lm = 'cose';
+        layoutMode = lm;
         isBipartiteLayout = (layoutMode === 'bipartite');
 
         if (cy) {
@@ -1544,8 +1813,45 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
-// 顶部：布局切换下拉与搜索平展的事件绑定（独立于侧边控制面板）
+// 右下角悬浮按钮组事件绑定
 document.addEventListener('DOMContentLoaded', function() {
+  // 折叠/展开按钮事件处理
+  var toggleBtn = document.getElementById('toggleFloatingBtn');
+  var floatingButtons = document.getElementById('floatingButtons');
+  
+  if (toggleBtn && floatingButtons) {
+    // 初始状态：展开
+    var isCollapsed = false;
+    
+    toggleBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      isCollapsed = !isCollapsed;
+      
+      if (isCollapsed) {
+        floatingButtons.classList.add('collapsed');
+        toggleBtn.classList.add('collapsed');
+      } else {
+        floatingButtons.classList.remove('collapsed');
+        toggleBtn.classList.remove('collapsed');
+      }
+      
+      // 保存折叠状态到本地存储
+      try {
+        localStorage.setItem('floatingButtonsCollapsed', isCollapsed.toString());
+      } catch(_) {}
+    });
+    
+    // 恢复折叠状态
+    try {
+      var savedState = localStorage.getItem('floatingButtonsCollapsed');
+      if (savedState === 'true') {
+        isCollapsed = true;
+        floatingButtons.classList.add('collapsed');
+        toggleBtn.classList.add('collapsed');
+      }
+    } catch(_) {}
+  }
+  
   // 布局切换菜单开合
   var layoutBtn = document.getElementById('layoutMenuBtn');
   var layoutMenu = document.getElementById('layoutMenu');
@@ -1566,8 +1872,8 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   function closeLayoutMenu(){ if (layoutMenu) layoutMenu.style.display = 'none'; }
 
-  // 顶部布局按钮（不与侧边栏 ID 冲突）
-  var tb = document.getElementById('topBipartiteLayoutBtn');
+  // 布局按钮事件处理
+  var tb = document.getElementById('bipartiteLayoutBtn');
   if (tb) tb.addEventListener('click', function() {
     try {
       isBipartiteLayout = true;
@@ -1577,7 +1883,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch(_) {}
     closeLayoutMenu();
   });
-  var tf = document.getElementById('topForceLayoutBtn');
+  var tf = document.getElementById('forceLayoutBtn');
   if (tf) tf.addEventListener('click', function() {
     try {
       isBipartiteLayout = false;
@@ -1587,7 +1893,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch(_) {}
     closeLayoutMenu();
   });
-  var tc = document.getElementById('topCircleLayoutBtn');
+  var tc = document.getElementById('circleLayoutBtn');
   if (tc) tc.addEventListener('click', function() {
     try {
       isBipartiteLayout = false;
@@ -1597,7 +1903,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch(_) {}
     closeLayoutMenu();
   });
-  var tg = document.getElementById('topGridLayoutBtn');
+  var tg = document.getElementById('gridLayoutBtn');
   if (tg) tg.addEventListener('click', function() {
     try {
       isBipartiteLayout = false;
@@ -1607,32 +1913,103 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch(_) {}
     closeLayoutMenu();
   });
-
-  // 顶部搜索/筛选与侧边隐藏控件镜像，复用既有 handleSearch/handleFilter
-  function mirrorAndHandle(srcId, dstId, eventName, handler) {
-    var src = document.getElementById(srcId);
-    var dst = document.getElementById(dstId);
-    if (!src) return;
-    src.addEventListener(eventName, function() {
-      try { if (dst) dst.value = src.value; } catch(_) {}
-      try { if (typeof handler === 'function') handler(); } catch(_) {}
-    });
-  }
-  mirrorAndHandle('topSearchInput', 'searchInput', 'input', handleSearch);
-  mirrorAndHandle('topTypeFilter', 'typeFilter', 'change', handleFilter);
-
-  // 初始值同步：侧边（隐藏）-> 顶部平展
+  
+  // 设置默认布局为网格布局
   try {
-    var pairs = [
-      ['searchInput','topSearchInput'],
-      ['typeFilter','topTypeFilter']
-    ];
-    pairs.forEach(function(p){
-      var src = document.getElementById(p[0]);
-      var dst = document.getElementById(p[1]);
-      if (src && dst && (dst.value === '' || dst.value == null)) {
-        dst.value = src.value || '';
+    isBipartiteLayout = false;
+    layoutMode = 'grid';
+    applyLayout('grid');
+    persistUIState();
+  } catch(_) {}
+
+  // 搜索菜单开合
+  var searchBtn = document.getElementById('searchMenuBtn');
+  var searchMenu = document.getElementById('searchMenu');
+  if (searchBtn && searchMenu) {
+    searchBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var open = searchMenu.style.display && searchMenu.style.display !== 'none';
+      searchMenu.style.display = open ? 'none' : 'block';
+      // 打开时聚焦搜索框
+      if (!open) {
+        var searchInput = document.getElementById('floatingSearchInput');
+        if (searchInput) setTimeout(() => searchInput.focus(), 100);
       }
     });
-  } catch(_) {}
+    document.addEventListener('click', function(e) {
+      try {
+        var open = searchMenu.style.display && searchMenu.style.display !== 'none';
+        if (open && !searchMenu.contains(e.target) && e.target !== searchBtn) {
+          searchMenu.style.display = 'none';
+        }
+      } catch(_) {}
+    });
+  }
+
+  // 类型菜单开合
+  var typeBtn = document.getElementById('typeMenuBtn');
+  var typeMenu = document.getElementById('typeMenu');
+  if (typeBtn && typeMenu) {
+    typeBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var open = typeMenu.style.display && typeMenu.style.display !== 'none';
+      typeMenu.style.display = open ? 'none' : 'block';
+    });
+    document.addEventListener('click', function(e) {
+      try {
+        var open = typeMenu.style.display && typeMenu.style.display !== 'none';
+        if (open && !typeMenu.contains(e.target) && e.target !== typeBtn) {
+          typeMenu.style.display = 'none';
+        }
+      } catch(_) {}
+    });
+  }
+
+  // 搜索菜单事件处理
+  var floatingSearchInput = document.getElementById('floatingSearchInput');
+  if (floatingSearchInput) {
+    floatingSearchInput.addEventListener('input', function() {
+      try {
+        // 同步到侧边栏搜索框
+        var searchInput = document.getElementById('searchInput');
+        if (searchInput) searchInput.value = floatingSearchInput.value;
+        // 执行搜索
+        handleSearch();
+      } catch(_) {}
+    });
+  }
+
+  // 类型按钮事件处理
+  var showAllBtn = document.getElementById('showAllBtn');
+  if (showAllBtn) {
+    showAllBtn.addEventListener('click', function() {
+      try {
+        currentTypeFilter = 'all';
+        handleFilter();
+      } catch(_) {}
+      if (typeMenu) typeMenu.style.display = 'none';
+    });
+  }
+
+  var showContainmentBtn = document.getElementById('showContainmentBtn');
+  if (showContainmentBtn) {
+    showContainmentBtn.addEventListener('click', function() {
+      try {
+        currentTypeFilter = 'containment';
+        handleFilter();
+      } catch(_) {}
+      if (typeMenu) typeMenu.style.display = 'none';
+    });
+  }
+
+  var showSkillBtn = document.getElementById('showSkillBtn');
+  if (showSkillBtn) {
+    showSkillBtn.addEventListener('click', function() {
+      try {
+        currentTypeFilter = 'skill';
+        handleFilter();
+      } catch(_) {}
+      if (typeMenu) typeMenu.style.display = 'none';
+    });
+  }
 });
