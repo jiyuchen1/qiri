@@ -665,8 +665,8 @@ function bindEventHandlers() {
             hideContextMenu();
             // 点击空白区域时才重置currentNode
             currentNode = null;
-            // 清除所有高亮
-            cy.elements().removeClass('highlighted common-highlighted');
+            // 清除所有高亮并恢复默认样式
+            clearAllHighlights();
         }
     });
 
@@ -705,7 +705,7 @@ function bindEventHandlers() {
 
     cy.on('cxttap', function(evt) {
         // 右键点击清除选择
-        cy.elements().removeClass('highlighted common-highlighted');
+        clearAllHighlights();
     });
 
     // 数据管理浮动面板：打开/关闭与三项动作（导入/清空/导出）
@@ -1117,7 +1117,7 @@ function createBipartiteLayout() {
 // 处理节点点击
 function handleNodeClick(node) {
     // 清除之前的高亮，包括所有节点和边
-    cy.elements().removeClass('highlighted common-highlighted');
+    clearAllHighlights();
     
     // 高亮当前节点及相邻节点
     node.addClass('highlighted');
@@ -1170,6 +1170,22 @@ function handleNodeClick(node) {
     }
     
     // 移除显示节点详情和更新统计信息，只保留高亮功能
+}
+
+// 清除所有高亮并恢复默认样式
+function clearAllHighlights() {
+    // 移除所有高亮类名
+    cy.elements().removeClass('highlighted common-highlighted');
+    
+    // 恢复所有技能节点的默认边框颜色
+    cy.nodes('[type = "skill"]').forEach(function(skill) {
+        skill.style('border-color', ''); // 恢复默认边框颜色
+    });
+    
+    // 恢复所有边的默认线条颜色
+    cy.edges().forEach(function(edge) {
+        edge.style('line-color', ''); // 恢复默认线条颜色
+    });
 }
 
 // 为每个共同技能创建不同的颜色组
